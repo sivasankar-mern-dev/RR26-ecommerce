@@ -1,17 +1,31 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/Footer";
+import ProductVisual from "../components/ProductVisual";
 import RelatedProducts from "../components/RelatedProducts";
+import WhyChooseSection from "../components/WhyChooseSection";
 import { useCart } from "../context/CartContext";
-import { productBenefits, products } from "../data/products";
-import { expandedDescription, formatPrice, iconForCategory, renderStars } from "../utils/format";
+import { products } from "../data/products";
+import { expandedDescription, formatPrice, iconForCategory } from "../utils/format";
 
 export default function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { dispatch } = useCart();
-  const [quantity, setQuantity] = useState(1);
   const product = products.find((item) => item.id === Number(id));
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(product?.size[0] ?? null);
+  const [selectedFragrance, setSelectedFragrance] = useState(product?.fragrances[0] ?? "");
+
+  useEffect(() => {
+    if (!product) {
+      return;
+    }
+
+    setQuantity(1);
+    setSelectedSize(product.size[0] ?? null);
+    setSelectedFragrance(product.fragrances[0] ?? "");
+  }, [product]);
 
   if (!product) {
     return (
@@ -28,8 +42,7 @@ export default function ProductPage() {
   }
 
   const relatedProducts = products.filter((item) => item.id !== product.id).slice(0, 3);
-  const reviewCount = 100 + product.id * 23;
-  const benefits = productBenefits[product.category] ?? productBenefits.Kitchen;
+  const activeSize = selectedSize ?? product.size[0];
 
   return (
     <>
@@ -40,20 +53,49 @@ export default function ProductPage() {
 
         <section className="product-layout">
           <div className="detail-visual" style={{ background: product.color }}>
-            {product.tag ? <span className={`tag ${product.tag === "Sale" ? "sale" : ""}`}>{product.tag}</span> : null}
             <div className="detail-watermark">RR26</div>
-            <div className="detail-icon">{iconForCategory(product.category)}</div>
+            <ProductVisual color={product.color} label={iconForCategory(product.category)} />
           </div>
 
           <div className="detail-copy">
             <span className="product-category">{product.category}</span>
-            <h1>{product.name}</h1>
-            <div className="rating-row">
-              <span>{renderStars(product.rating)}</span>
-              <span>{product.rating.toFixed(1)} rating</span>
-              <span>{reviewCount} reviews</span>
+            <h1>{product.title}</h1>
+            <div className="detail-product-name">{product.product}</div>
+            <div className="detail-price">{formatPrice(activeSize.price)}</div>
+            <div className="option-group">
+              <div className="option-label">Size</div>
+              <div className="chip-row">
+                {product.size.map((variant) => (
+                  <button
+                    key={variant.volume}
+                    type="button"
+                    className={`selection-chip selectable-chip ${
+                      activeSize.volume === variant.volume ? "active-chip" : ""
+                    }`}
+                    onClick={() => setSelectedSize(variant)}
+                  >
+                    {variant.volume} {formatPrice(variant.price)}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="detail-price">{formatPrice(product.price)}</div>
+            <div className="option-group">
+              <div className="option-label">Fragrance</div>
+              <div className="chip-row">
+                {product.fragrances.map((fragrance) => (
+                  <button
+                    key={fragrance}
+                    type="button"
+                    className={`selection-chip selectable-chip ${
+                      selectedFragrance === fragrance ? "active-chip" : ""
+                    }`}
+                    onClick={() => setSelectedFragrance(fragrance)}
+                  >
+                    {fragrance}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="detail-description">{expandedDescription(product)}</p>
 
             <div className="quantity-row" aria-label="Quantity selector">
@@ -72,7 +114,14 @@ export default function ProductPage() {
               onClick={() =>
                 dispatch({
                   type: "ADD_ITEM",
-                  payload: { id: product.id, name: product.name, price: product.price, qty: quantity },
+                  payload: {
+                    id: product.id,
+                    name: product.product,
+                    price: activeSize.price,
+                    qty: quantity,
+                    volume: activeSize.volume,
+                    fragrance: selectedFragrance,
+                  },
                 })
               }
             >
@@ -91,11 +140,13 @@ export default function ProductPage() {
             <h2>Key Benefits</h2>
           </div>
           <ul>
-            {benefits.map((benefit) => (
+            {product.keyFeatures.map((benefit) => (
               <li key={benefit}>{benefit}</li>
             ))}
           </ul>
         </section>
+
+        <WhyChooseSection compact />
 
         <RelatedProducts items={relatedProducts} />
       </main>
@@ -103,3 +154,4 @@ export default function ProductPage() {
     </>
   );
 }
+

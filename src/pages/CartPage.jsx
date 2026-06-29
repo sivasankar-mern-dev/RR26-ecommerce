@@ -15,6 +15,7 @@ export default function CartPage() {
       ...item,
       category: product?.category ?? "Cleaning",
       color: product?.color ?? "#E8F4F0",
+      title: product?.title ?? item.name,
     };
   });
 
@@ -40,7 +41,7 @@ export default function CartPage() {
           <section className="cart-layout">
             <div className="cart-list">
               {cartItems.map((item) => (
-                <article key={item.id} className="cart-item">
+                <article key={`${item.id}-${item.volume}-${item.fragrance}`} className="cart-item">
                   <div className="cart-item-visual" style={{ background: item.color }}>
                     <ProductVisual color={item.color} label={iconForCategory(item.category)} compact />
                   </div>
@@ -48,11 +49,21 @@ export default function CartPage() {
                   <div className="cart-item-copy">
                     <span className="product-category">{item.category}</span>
                     <h3>{item.name}</h3>
+                    <div className="cart-item-subtitle">{item.title}</div>
+                    <div className="cart-item-meta">
+                      <span>{item.volume}</span>
+                      <span>{item.fragrance}</span>
+                    </div>
                     <p>{formatPrice(item.price)} each</p>
                     <button
                       type="button"
                       className="wishlist-link"
-                      onClick={() => dispatch({ type: "REMOVE_ITEM", payload: item.id })}
+                      onClick={() =>
+                        dispatch({
+                          type: "REMOVE_ITEM",
+                          payload: { id: item.id, volume: item.volume, fragrance: item.fragrance },
+                        })
+                      }
                     >
                       Remove
                     </button>
@@ -64,8 +75,19 @@ export default function CartPage() {
                         type="button"
                         onClick={() =>
                           item.qty === 1
-                            ? dispatch({ type: "REMOVE_ITEM", payload: item.id })
-                            : dispatch({ type: "UPDATE_QTY", payload: { id: item.id, qty: item.qty - 1 } })
+                            ? dispatch({
+                                type: "REMOVE_ITEM",
+                                payload: { id: item.id, volume: item.volume, fragrance: item.fragrance },
+                              })
+                            : dispatch({
+                                type: "UPDATE_QTY",
+                                payload: {
+                                  id: item.id,
+                                  volume: item.volume,
+                                  fragrance: item.fragrance,
+                                  qty: item.qty - 1,
+                                },
+                              })
                         }
                       >
                         -
@@ -74,7 +96,15 @@ export default function CartPage() {
                       <button
                         type="button"
                         onClick={() =>
-                          dispatch({ type: "UPDATE_QTY", payload: { id: item.id, qty: item.qty + 1 } })
+                          dispatch({
+                            type: "UPDATE_QTY",
+                            payload: {
+                              id: item.id,
+                              volume: item.volume,
+                              fragrance: item.fragrance,
+                              qty: item.qty + 1,
+                            },
+                          })
                         }
                       >
                         +

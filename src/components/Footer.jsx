@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import logo from "../assets/rr26-logo.png";
 import { useSectionNavigation } from "../hooks/useSectionNavigation";
 
 export default function Footer() {
@@ -7,9 +8,12 @@ export default function Footer() {
 
   return (
     <footer className="footer" id="contact">
-      <div>
-        <div className="footer-brand">RR26</div>
-        <p>Clean Smarter. Live Better.</p>
+      <div className="footer-brand-block">
+        <img className="footer-logo" src={logo} alt="RR26 logo" />
+        <div>
+          <div className="footer-brand">RR26</div>
+          <p>Clean Smarter. Live Better.</p>
+        </div>
       </div>
       <div className="footer-links">
         <Link to="/">Home</Link>
@@ -23,7 +27,7 @@ export default function Footer() {
           Contact
         </a>
       </div>
-      <div className="footer-copy">Â© 2026 RR26</div>
+      <div className="footer-copy">© 2026 RR26</div>
     </footer>
   );
 }

@@ -5,13 +5,22 @@ const CartContext = createContext(null);
 function cartReducer(state, action) {
   switch (action.type) {
     case "ADD_ITEM": {
-      const existing = state.items.find((item) => item.id === action.payload.id);
+      const existing = state.items.find(
+        (item) =>
+          item.id === action.payload.id &&
+          item.volume === action.payload.volume &&
+          item.fragrance === action.payload.fragrance
+      );
 
       if (existing) {
         return {
           ...state,
           items: state.items.map((item) =>
-            item.id === action.payload.id ? { ...item, qty: item.qty + action.payload.qty } : item
+            item.id === action.payload.id &&
+            item.volume === action.payload.volume &&
+            item.fragrance === action.payload.fragrance
+              ? { ...item, qty: item.qty + action.payload.qty }
+              : item
           ),
         };
       }
@@ -24,14 +33,25 @@ function cartReducer(state, action) {
     case "REMOVE_ITEM":
       return {
         ...state,
-        items: state.items.filter((item) => item.id !== action.payload),
+        items: state.items.filter(
+          (item) =>
+            !(
+              item.id === action.payload.id &&
+              item.volume === action.payload.volume &&
+              item.fragrance === action.payload.fragrance
+            )
+        ),
       };
     case "UPDATE_QTY":
       return {
         ...state,
         items: state.items
           .map((item) =>
-            item.id === action.payload.id ? { ...item, qty: Math.max(1, action.payload.qty) } : item
+            item.id === action.payload.id &&
+            item.volume === action.payload.volume &&
+            item.fragrance === action.payload.fragrance
+              ? { ...item, qty: Math.max(1, action.payload.qty) }
+              : item
           )
           .filter((item) => item.qty > 0),
       };
